@@ -1,0 +1,15 @@
+trigger: 
+- main
+
+pool:
+  name:  'myvmsspool'
+jobs:
+- job: Test1
+  steps: 
+  - pwsh: | 
+      Start-Sleep -s  500
+
+- job: Test2
+  steps: 
+  - pwsh: | 
+      Start-Sleep -s  500
