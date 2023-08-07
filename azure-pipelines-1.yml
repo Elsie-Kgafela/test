@@ -1,0 +1,48 @@
+trigger:
+ - main
+pool:
+  name:  'myvmsspool'
+
+parameters:
+- name: pbins
+  displayName: PBIN list
+  type: object
+  default:
+    - file1
+    - file2
+    - file3
+
+
+
+variables:
+
+- name: PBIN_CACHE_DIRECTORY
+  value: $(Agent.ToolsDirectory)/PBIN
+
+
+
+jobs:
+- ${{ each pbin in parameters.pbins }}: 
+  - job: test_${{pbin}}
+    displayName: 'Build Files in Parallel-${{pbin}}'    
+    steps: 
+    - task: PowerShell@2
+      inputs:
+        targetType: inline
+        pwsh: true
+        script: |
+            script/Install-Module.ps1 -Name "Azure Az" -Module "Az"
+            script/Install-Module.ps1 -Name "powershell-yaml" -Module "powershell-yaml"
+      displayName: Dependencies
+
+    - task: PowerShell@2
+      inputs:
+          targetType: filePath
+          pwsh: true
+          filePath: script/Download-Pbins.ps1
+          arguments: -Destination $(PBIN_CACHE_DIRECTORY) -StorageAccountName "mystorage15689" -StorageAccountKey "AbF/p5UmVVU4CwV6zxuVuO/fsMuWdPwkGdwsSzLv6Pkr+RkAIABKmLMXyO5yr84ftClD9XcH7kBD+AStI3x+zQ==" -Pbins $(PBIN_LIST)
+      displayName: Download PBINs       
+    - task: PowerShell@2
+      inputs:
+          script: echo "This is the content of the file." > file.txt
+      displayName: add content to file.   
